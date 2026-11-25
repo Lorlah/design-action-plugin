@@ -17,6 +17,10 @@
 | **Grid/responsive breakpoints** | All responsive breakpoints | Grid layout components, media queries |
 | **Typography hierarchy** | Font sizes, weights, line-clamp, colors | Text/heading components, content areas |
 
+### Design Principles Check
+
+Before building, check whether the user has a design-principles skill installed (set `design.principles_skill` in config, for example `ui-design-principles`). If so, read it and apply its spacing, alignment and consistency rules on top of the extracted production values. If none is set, skip this step.
+
 ### How to Extract
 
 1. Launch an Explore agent targeting the production feature area closest to the prototype's domain
@@ -66,14 +70,16 @@ Work all N in parallel? Or select specific items?
 
 ### Team Roles
 
-| Role | Responsibility |
-|------|---------------|
-| **Lead** (you) | Coordinate, synthesize, present |
-| **Scout** | Research: meetings, tasks, caches |
-| **Builder** | Artifact creation via appropriate skill |
-| **Reviewer** | DDR drafting, backlog updates |
+| Role | Default model | Responsibility |
+|------|---------------|---------------|
+| **Lead** (you) | Strongest available (e.g. Opus) | Coordinate, synthesize, present |
+| **Scout** | Mid-tier (e.g. Sonnet) | Research: meetings, tasks, caches |
+| **Builder** | Mid-tier (e.g. Sonnet) | Artifact creation via appropriate skill |
+| **Reviewer** | Fast (e.g. Haiku) | DDR drafting, backlog updates |
 
 Spawn only needed roles. A 2-item run might just need 2 scouts.
+
+Change the defaults with `agents.models` in config (for example `scout: "sonnet"`). Research and review don't need the strongest model, so matching the model to the role keeps parallel runs cheaper and faster.
 
 ### Multi-Tool Dispatch
 

@@ -11,6 +11,32 @@
 
 **Strategy**: Cast a wide net at the index level, progressively load detail.
 
+## Section 0: Pick the Access Route (read first)
+
+### Step 0.1: Detect the meeting access tier
+
+Make one cheap call with the configured provider (for example `search_meetings(query="test", limit=1)`):
+
+- **Cloud MCP responds** (for Granola: the official Granola cloud MCP) → Tier 1. Use Steps 1.2-1.5 as written.
+- **Local MCP responds** (for Granola: the community local-cache MCP) → Tier 2. Same steps, but search may be keyword-only, so use more query variations.
+- **Neither responds, `archive_dir` is set** → Tier 3. Use "Archive-direct loading" below.
+- **Nothing else available, `notes_dir` is set** → Tier 4. Treat it as the `manual` provider.
+
+Granola note: since Granola v7.277 (May 2026) the desktop app encrypts its local cache, so community MCPs that read the cache file get no data. Use the cloud MCP or an archive instead (see `docs/providers.md`).
+
+### Step 0.2: Check caches and the daily briefing first
+
+Run SKILL.md Phase 1 pre-steps (extraction cache, existing artifacts, synthesis cache, daily briefing) before any meeting call. A fresh cache or today's briefing often makes meeting loading unnecessary.
+
+### Archive-direct loading (Tier 3)
+
+Use when no meeting MCP is available in this runtime but meetings have been exported to `providers.meetings.config.archive_dir` (for example by a scheduled export job).
+
+1. **Index:** if `{archive_dir}/index.json` exists, read it and filter by date, then by title keywords, then prefer entries with a transcript or notes. Otherwise list the files and filter by name and modified date.
+2. **Notes:** read each meeting file. Use the first non-empty field among: rendered markdown notes, plain-text notes, structured notes (walk the content tree and collect the text), AI summary panels.
+3. **Transcripts:** read the matching transcript file for the top-ranked meetings only, as in Step 1.4.
+4. **Freshness:** say how current the archive is (from its sync log or newest entry). A meeting from earlier today may not be exported yet.
+
 ## Step 1.1: Parse Arguments
 
 Extract from user input:

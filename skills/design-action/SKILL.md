@@ -94,6 +94,7 @@ paths:
   decisions: "~/.design-action/decisions"
   inbox: "~/.design-action/inbox.md"
   backlog: "~/.design-action/backlog.md"
+  review_queue: "~/.design-action/review-queue"
 ```
 
 ## Core Principles
@@ -135,6 +136,31 @@ paths:
 
 ---
 
+## Phase 0: Meeting Source Detection
+
+Before loading any meetings, work out which access route is available. Some providers offer more than one (Granola has a cloud MCP and a community local MCP), and some runtimes have no meeting MCP at all.
+
+### Quick Detection
+
+Make one cheap call with the configured provider (for example `search_meetings(query="test", limit=1)`), then use the first route that works:
+
+| Tier | Route | When it applies | Notes |
+|------|-------|-----------------|-------|
+| 1 | Cloud MCP | The provider's hosted MCP responds | Best search quality, live data |
+| 2 | Local MCP | A local or community MCP responds | Works offline. Search may be keyword-only |
+| 3 | Archive directory | `providers.meetings.config.archive_dir` is set | Read exported meeting files directly. Works in any runtime |
+| 4 | Notes directory | `providers.meetings.config.notes_dir` is set | Plain markdown notes, same as the `manual` provider |
+
+Tell the user which tier you used ("Meetings: local MCP, keyword search"), because it changes how much the search can find.
+
+### Source health comes from data, not memory
+
+Never call the meeting source "expired" or "broken" because an earlier note or session said so. Check the last successful sync (the archive's sync log, or the newest meeting date the provider returns). Under 24h old is healthy, and an empty result just means a quiet period. Over 24h old is stale: report it with the timestamp you measured.
+
+**Read `reference/tiered-loading.md` Section 0 for the detailed procedure.**
+
+---
+
 ## Phase 1: Context Gathering
 
 The skill uses a **tiered loading system**: discover all matches (unlimited), load summaries (broad context), then load full transcripts (deep context). This maximizes coverage while respecting token limits.
@@ -148,9 +174,16 @@ Read `~/.design-action/config.yaml`. If missing, tell user to run `/setup` and s
 
 **2. Extraction Cache Check**
 Before querying meetings, check `{paths.extractions}/` for existing extraction files matching the topic.
-- If found and < 48 hours: ask "Reuse, refresh, or start fresh?"
-- If found and > 48 hours: "Stale cache. Fresh extract recommended. Reuse anyway?"
-- If not found: proceed to fresh extraction.
+
+*Step A: Read the cache and check for freshness metadata.* Automated runs may add a `freshness` field.
+- `freshness.status = "FRESH"` and `freshness.verified_at` under 48h: "An automated run already checked this cache against all sources. Reuse it?"
+- `freshness.status = "STALE"`: "This cache was flagged as stale ([reasons]). Fresh extract recommended. Reuse anyway?"
+- No `freshness` field: under 48h, ask "Reuse, refresh, or start fresh?" Over 48h, say "Stale cache. Fresh extract recommended. Reuse anyway?"
+- Not found: proceed to fresh extraction.
+
+*Step B: Check for existing artifacts.* Look in `{paths.review_queue}/` for files matching the topic keyword. If any exist, offer: "There's already a [artifact type] for this topic from [date]. Build on it, or start fresh?" If the user builds on it, read the artifact and its synthesis cache, then skip to Phase 3.
+
+*Step C: Check for a synthesis cache.* If `{paths.extractions}/{stream}-{topic}-synthesis.json` exists and is fresh, offer: "A synthesis already exists ([N] pain points, [N] decisions). Skip to Phase 3, or re-synthesise with fresh data?"
 
 **3. Daily Briefing Pre-Context**
 Check `{paths.briefings}/YYYY-MM-DD.md` (today, fallback to yesterday). If found:
@@ -190,6 +223,8 @@ If not found: continue normally (briefing is additive, not a dependency).
 | 1. Discovery | Search meetings (limit from config or flag) | ~5K | Meeting index only |
 | 2. Summaries | Load details for ranked meetings 6-50 | ~15-25K | Key decisions, participants |
 | 3. Full Transcripts | Load transcripts for top 5-10 | ~50-80K | Verbatim quotes, full context |
+
+**Search wide in discovery.** One query misses meetings that use different words. Run the topic plus 2-3 variations (synonyms, the feature's internal name, a key person's name), then deduplicate by meeting ID before ranking.
 
 After loading, present discovery table and offer interactive refinement: "load more", "swap N for M", "focus on [person]", "focus on [date range]", "continue".
 
@@ -264,7 +299,7 @@ Present primary recommendation with rationale + 2-3 alternatives. Wait for user 
 
 **If user selects Interactive Prototype**: Read `reference/production-extraction.md` and run Production Pattern Extraction before building.
 
-**If `--parallel` or 2+ independent items**: Read `reference/team-execution.md` for Agent Team dispatch.
+**If `--parallel` or 2+ independent items**: Read the Team Execution section of `reference/production-extraction.md` for Agent Team dispatch.
 
 ---
 
@@ -345,9 +380,9 @@ Skip normal Phases 1-5. Run a proactive source scan for NEW design-relevant item
 Quick overview:
 1. Load scan baseline (daily briefing + last-checks timestamps)
 2. Check triage output — if pre-triaged items exist, offer to skip scan
-3. Search meetings for new items since last scan
-4. Check task tracker freshness and delta
-5. Check communication channels (if available)
+3. Check meeting source health (from data), search for new meetings since last scan, and read design-relevant ones in full
+4. Check task tracker freshness (under 2h reuse, 2-24h delta, over 24h or missing full query)
+5. Check communication channels in layers: connected search, browser pass for DMs and threads, then merge
 6. Compare against backlog
 7. Score new items with configured scoring framework
 8. Present findings table with new items, backlog updates, design decisions, gaps

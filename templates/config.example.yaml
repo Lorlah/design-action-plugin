@@ -47,6 +47,12 @@ providers:
       # For "notion": database ID containing meeting notes
       # notion_meeting_db: "abc123..."
 
+      # Optional fallback for any provider: a folder of exported meetings.
+      # Used when no meeting MCP is available in the current runtime
+      # (see SKILL.md Phase 0). Leave unset if you don't export meetings.
+      # archive_dir: "~/meeting-archive"
+      # sync_log: "~/meeting-archive/extraction_log.json"  # optional, has "last_run"
+
   # Task tracking
   # Supported: jira | linear | github-issues | notion | none
   tasks:
@@ -76,6 +82,7 @@ providers:
     type: "none"
     config:
       channels: []
+      people: []      # Optional: people whose DMs and @mentions to check in the browser pass
       # For "slack-mcp": no extra config (uses Slack MCP)
       # For "slack-browser": scans Slack via Chrome DevTools MCP
       #   Requires Chrome open with Slack tab
@@ -144,3 +151,22 @@ paths:
   decisions: "~/.design-action/decisions"      # Design Decision Records
   inbox: "~/.design-action/inbox.md"           # Incoming items
   backlog: "~/.design-action/backlog.md"       # Scored backlog
+  review_queue: "~/.design-action/review-queue"  # Finished artifacts waiting for review
+
+# ─── Agent Team (optional) ──────────────────────────────────────
+# Models for parallel team roles (see reference/production-extraction.md).
+# Leave unset to use the defaults shown.
+
+# agents:
+#   models:
+#     lead: "opus"
+#     scout: "sonnet"
+#     builder: "sonnet"
+#     reviewer: "haiku"
+
+# ─── Design (optional) ──────────────────────────────────────────
+# A skill with your spacing, alignment and consistency rules, read
+# before building prototypes. Leave unset to skip.
+
+# design:
+#   principles_skill: "ui-design-principles"

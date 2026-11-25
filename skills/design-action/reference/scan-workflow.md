@@ -33,6 +33,20 @@ Check `{paths.extractions}/triage-{date}.json`:
 
 ## Step 3: Check Meetings for New Items
 
+### 3a. Determine meeting source health from data, never from memory
+
+Do NOT call the meeting source "expired", "broken", or "degraded" based on memory, earlier notes, or assumption. Work it out from data each run:
+
+1. If `providers.meetings.config.archive_dir` is set and contains a sync log (`providers.meetings.config.sync_log`, default `{archive_dir}/extraction_log.json`), read its `last_run`.
+2. Otherwise, use the date of the newest meeting the provider returns.
+3. Classify:
+   - **HEALTHY**: last sync (or newest meeting) is under 24h old. "0 new meetings" means a genuinely quiet window. Report it neutrally, not as a problem.
+   - **STALE**: over 24h with no sync. This is the only case that warrants a "source degraded" warning in Gaps & Warnings, with the timestamp you measured.
+
+### 3b. Pick the meeting access tier
+
+Use the same detection as SKILL.md Phase 0 (cloud MCP → local MCP → archive directory → notes directory). Report which tier was used in the Sources Scanned table.
+
 ### Meeting Scan Dispatch
 
 | If `providers.meetings.type` = | Scan Calls |
@@ -48,13 +62,27 @@ Check `{paths.extractions}/triage-{date}.json`:
 - Deduplicate by ID
 - Classify each: design-relevant? Which stream?
 - Design signals: "UX", "design", "wireframe", "prototype", "user journey", "error handling", "onboarding", "flow", participant names from config
+- Search with 2-3 query variations, not one. Deduplicate by meeting ID before classifying.
+
+### 3c. Read design-relevant meetings in full (mandatory, do not keyword-scan)
+
+A title or keyword scan is only enough to decide *whether* a meeting is design-relevant. Once a meeting is classified as design-relevant, read its **full transcript** (or full notes if no transcript exists) before reporting on it. Counting keywords like "prototype" or "export" is not enough and misses real work.
+
+- A meeting that "maps to an existing ticket" is NOT therefore empty of new work. Extract every concrete open sub-task: owner, deadline, decision made, dependency, blocker.
+- Apply the scope filter explicitly. Keep design-scoped items. List what you dropped as out of scope (pure engineering, personal) so the user can overrule it.
 
 ## Step 4: Check Task Tracker (Freshness + Delta)
 
 ### 4a. Evaluate timestamp freshness
-- Task check timestamp fresh (< 2h)? Use cached data
-- Stale? Warn user "Task data may be outdated"
-- If task MCP available and data stale: direct scan as backup
+
+Read the actual task-check timestamp from `last-checks.json` (`task_check.timestamp`). Do not assume it exists or is recent. A scheduled check can fail silently.
+
+| Timestamp age | Action |
+|---------------|--------|
+| < 2h | Use cached data from the briefing / last check |
+| 2-24h | Run a **delta** query for items updated since that timestamp |
+| > 24h | Treat as fully stale. Run a full last-24h query |
+| Missing | Run a full last-24h query |
 
 ### 4b. Read inbox for items already captured
 From `{paths.inbox}` — note existing items to avoid duplicates.
@@ -86,6 +114,16 @@ Track: new items, status transitions, new comments with design implications.
 - Target channels: from `{streams[].channels}` config
 - Signals: design decisions, feature requests, blockers, @mentions of user
 - If tool unavailable: skip gracefully, log gap in findings
+
+### Layered scan (catches what a single search misses)
+
+Channel search alone misses DMs, thread replies, and @mentions in busy channels. Scan in layers:
+
+1. **Layer 1, connected search (always):** the communication MCP's search, plus Notion AI connected sources if available (`notion-search(query="{topic} {stream keywords}", query_type="internal")`). Broad but shallow.
+2. **Layer 2, browser pass (when a browser tool is available):** for DMs with people in `providers.communication.config.people`, threads in `{streams[].channels}`, and @mentions of the user. Use the platform's own search page, not channel URLs: message lists often render as virtual lists that page readers can't see. Screenshot and zoom if the page reader returns nothing.
+3. **Layer 3, merge:** deduplicate across layers by message link (or author + timestamp), and note which layer found each item.
+
+If only Layer 1 ran, say so in Gaps & Warnings ("DMs and threads not checked: no browser tool available").
 
 ## Step 6: Compare Against Existing Backlog
 

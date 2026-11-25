@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.2.0] - 2026-11-25
+
+Improvements carried over from day-to-day use of the skill, rewritten to use config settings.
+
+### Added
+- **Meeting source detection (SKILL.md Phase 0).** Tries the provider's cloud MCP, then a local MCP, then an exported archive folder (`providers.meetings.config.archive_dir`), then a notes folder, and tells you which one it used.
+- **Archive-direct loading** in `reference/tiered-loading.md` for runtimes with no meeting MCP.
+- **Source health from data.** The meeting source is only reported as stale when its last sync is over 24h old, measured each run, never assumed from memory.
+- **Smarter cache checks.** Extraction caches can carry `freshness` metadata from automated runs. The skill now also offers to build on an existing artifact in `paths.review_queue` and to skip re-synthesis when a fresh synthesis cache exists.
+- **Wider discovery.** Searches the topic plus 2-3 variations and removes duplicates by meeting ID.
+- **Scan mode: full reads of design-relevant meetings.** Keyword scans only decide relevance. Relevant meetings are read in full, and "already has a ticket" no longer counts as "nothing new".
+- **Scan mode: task-tracker freshness rules.** Under 2h reuse, 2-24h delta query, over 24h or missing full query (scheduled checks can fail silently).
+- **Scan mode: layered chat scan.** Connected search, then a browser pass for DMs, threads and @mentions (`providers.communication.config.people`), then a merge.
+- **Agent Team model defaults per role** (`agents.models`) and an optional **design-principles check** before prototyping (`design.principles_skill`).
+
+### Changed
+- `README.md` is now the public README (previously `README-external.md`). The internal README was removed from the public repo.
+- Install and download links point at `Lorlah/design-action-plugin` (the repo moved from `lolasalehu-rgb`; old links redirect).
+
+### Fixed
+- Phase 3 pointed to `reference/team-execution.md`, which doesn't exist. It now points to the Team Execution section of `reference/production-extraction.md`.
+- README install "Option 2" and one download URL pointed at a private repo and returned 404 for public users.
+
 ## [1.1.0] - 2026-06-02
 
 ### Fixed
