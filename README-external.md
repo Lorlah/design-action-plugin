@@ -9,7 +9,7 @@ Turn scattered design evidence into grounded artifacts with full source citation
 Works with Claude Code, Cursor, Copilot, Cline, and more. Gives you the core `/design-action` skill with evidence synthesis and artifact creation.
 
 ```bash
-npx skills add lolasalehu-rgb/design-action-plugin
+npx skills add Lorlah/design-action-plugin
 ```
 
 Then run `/setup` to connect your tools.
@@ -19,7 +19,7 @@ Then run `/setup` to connect your tools.
 Includes everything above plus: `/scan`, `/briefing` commands, automated daily briefings, heartbeat scanning, launchd/systemd/cron scheduling, and config validation scripts.
 
 ```bash
-git clone https://github.com/lolasalehu-rgb/design-action-plugin.git
+git clone https://github.com/Lorlah/design-action-plugin.git
 claude --plugin-dir ./design-action-plugin
 ```
 
@@ -110,7 +110,7 @@ SKILL_DIR=$(find ~/.claude/skills ~/.agents/skills -name "SKILL.md" -path "*/des
 # Download missing reference files
 for file in config-template.yaml ddr-template.md scoring-framework.md tiered-loading.md synthesis-patterns.md artifact-templates.md evidence-grounding.md scan-workflow.md multi-source.md production-extraction.md; do
   if [ ! -f "$SKILL_DIR/reference/$file" ]; then
-    curl -sL "https://raw.githubusercontent.com/lolasalehu-rgb/design-action-plugin/main/skills/design-action/reference/$file" -o "$SKILL_DIR/reference/$file"
+    curl -sL "https://raw.githubusercontent.com/Lorlah/design-action-plugin/main/skills/design-action/reference/$file" -o "$SKILL_DIR/reference/$file"
   fi
 done
 ```
@@ -123,7 +123,7 @@ If you're getting an old version:
 npx skills update        # Update to latest
 # OR force reinstall:
 npx skills remove design-action
-npx skills add lolasalehu-rgb/design-action-plugin
+npx skills add Lorlah/design-action-plugin
 ```
 
 ### /setup says "no MCP servers detected"

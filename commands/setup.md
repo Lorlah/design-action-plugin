@@ -39,7 +39,7 @@ mkdir -p "$SKILL_DIR/reference"
 for file in config-template.yaml ddr-template.md scoring-framework.md tiered-loading.md synthesis-patterns.md artifact-templates.md evidence-grounding.md scan-workflow.md multi-source.md production-extraction.md; do
   if [ ! -f "$SKILL_DIR/reference/$file" ]; then
     echo "Downloading missing: $file"
-    curl -sL "https://raw.githubusercontent.com/lolasalehu-rgb/design-action-plugin/main/skills/design-action/reference/$file" -o "$SKILL_DIR/reference/$file"
+    curl -sL "https://raw.githubusercontent.com/Lorlah/design-action-plugin/main/skills/design-action/reference/$file" -o "$SKILL_DIR/reference/$file"
   fi
 done
 ```

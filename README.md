@@ -9,7 +9,7 @@ Pulls context from everywhere you work -  Meeting discussions, Jira tickets, Sla
 ### Option 1: Skill only (works in Claude Code, Cursor, Copilot, Cline)
 
 ```bash
-npx skills add lolasalehu-rgb/design-action-plugin
+npx skills add Lorlah/design-action-plugin
 ```
 
 Then run `/setup` — it auto-detects your MCP servers (Google Meet, Jira, Slack, Figma, etc.).
@@ -17,8 +17,8 @@ Then run `/setup` — it auto-detects your MCP servers (Google Meet, Jira, Slack
 ### Option 2: Full plugin (Claude Code — recommended)
 
 ```bash
-git clone git@github.com:akeneo/design-action.git
-cd design-action
+git clone https://github.com/Lorlah/design-action-plugin.git
+cd design-action-plugin
 claude --plugin-dir .
 ```
 
@@ -136,7 +136,7 @@ The skill self-repairs on first run. If files are still missing:
 ```bash
 SKILL_DIR=$(find ~/.claude/skills -name "SKILL.md" -path "*/design-action/*" -exec dirname {} \; 2>/dev/null | head -1)
 # Re-download from GitHub
-curl -sL "https://raw.githubusercontent.com/akeneo/design-action/main/skills/design-action/reference/{FILENAME}" -o "$SKILL_DIR/reference/{FILENAME}"
+curl -sL "https://raw.githubusercontent.com/Lorlah/design-action-plugin/main/skills/design-action/reference/{FILENAME}" -o "$SKILL_DIR/reference/{FILENAME}"
 ```
 
 ## Documentation

@@ -31,7 +31,7 @@ Transform scattered design evidence — from meetings, videos, tasks, chat, and 
 SKILL_DIR=$(find ~/.claude/skills ~/.agents/skills -name "SKILL.md" -path "*/design-action/*" -exec dirname {} \; 2>/dev/null | head -1)
 
 # Download missing files from GitHub
-curl -sL "https://raw.githubusercontent.com/lolasalehu-rgb/design-action-plugin/main/skills/design-action/reference/{FILENAME}" -o "$SKILL_DIR/reference/{FILENAME}"
+curl -sL "https://raw.githubusercontent.com/Lorlah/design-action-plugin/main/skills/design-action/reference/{FILENAME}" -o "$SKILL_DIR/reference/{FILENAME}"
 ```
 
 Replace `{FILENAME}` with each missing file. Create the `reference/` directory first if it doesn't exist.
